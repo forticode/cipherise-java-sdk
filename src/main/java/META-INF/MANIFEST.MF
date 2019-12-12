@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Class-Path: httpcore-nio-4.4.4.jar httpmime-4.5.2.jar commons-codec-1.
+ 9.jar commons-logging-1.2.jar bcprov-jdk15on-1.54.jar httpcore-4.4.4.
+ jar json-20160212.jar httpasyncclient-4.1.1.jar unirest-java-1.4.9.ja
+ r httpclient-4.5.2.jar
+
