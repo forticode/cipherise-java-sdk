@@ -21,7 +21,6 @@
       <name>Forticode</name>
       <email>maven@forticode.com</email>
       <organization>Forticode</organization>
-      <organizationUrl>https://www.forticode.com/</organizationUrl>
     </developer>
   </developers>
   <scm>
@@ -52,11 +51,11 @@
   </dependencies>
   <distributionManagement>
     <snapshotRepository>
-      <id>ossrh</id>
+      <id>com.forticode.cipherise</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
     <repository>
-      <id>ossrh</id>
+      <id>com.forticode.cipherise</id>
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/
       </url>
     </repository>
@@ -106,6 +105,15 @@
       <plugin>
         <artifactId>maven-deploy-plugin</artifactId>
         <version>3.0.0-M1</version>
+        <executions>
+          <execution>
+            <id>default-deploy</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>deploy</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -129,6 +137,12 @@
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
         <version>1.6.8</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
