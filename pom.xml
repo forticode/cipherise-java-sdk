@@ -139,7 +139,7 @@
         <version>1.6.8</version>
         <extensions>true</extensions>
         <configuration>
-          <serverId>ossrh</serverId>
+          <serverId>central</serverId>
           <nexusUrl>https://oss.sonatype.org/</nexusUrl>
           <autoReleaseAfterClose>true</autoReleaseAfterClose>
         </configuration>
