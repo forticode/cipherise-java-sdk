@@ -235,7 +235,7 @@ public class Service {
      *                              to the user in the application.
      * @param brandingMessage       The branding associated with this request.
      * @param appRedirectURL        The URL for the app to redirect to after
-     *                              finishing.
+     *                              finishing. This can be null if not relevant.
      * @return An authentication session
      * @throws CipheriseException Any exceptions thrown by Cipherise.
      */

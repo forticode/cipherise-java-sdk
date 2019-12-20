@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.forticode.cipherise</groupId>
   <artifactId>javasdk</artifactId>
-  <version>6.2.0-SNAPSHOT</version>
+  <version>6.2.1-SNAPSHOT</version>
   <name>${project.groupId}:${project.artifactId}</name>
   <description>
     An SDK to interact with a Cipherise server.

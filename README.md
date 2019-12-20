@@ -1,10 +1,10 @@
 # Cipherise Java SDK
-## Version 6.2.0
+## Version 6.2.1
 
 This SDK is for interacting with a Cipherise server.
 ## Installation
 
-Add the following to your project's pom.xml.<br/><br/>```<!-- https://developer.cipherise.com/resources/docs/java/ -->```<br/>```<dependency>```<br/>&nbsp;&nbsp;```    <groupId>com.forticode.cipherise_app_sim_int</groupId>```<br/>&nbsp;&nbsp;```    <artifactId>app_sim_int</artifactId>```<br/>&nbsp;&nbsp;```    <version>1.0.0</version>```<br/>```</dependency>```
+Add the following to your project's pom.xml.<br/><br/>```<!-- https://developer.cipherise.com/resources/docs/java/ -->```<br/>```<dependency>```<br/>&nbsp;&nbsp;```    <groupId>com.forticode.cipherise</groupId>```<br/>&nbsp;&nbsp;```    <artifactId>javasdk</artifactId>```<br/>&nbsp;&nbsp;```    <version>6.2.1</version>```<br/>```</dependency>```
 ## Introduction
 Cipherise does away with passwords and usernames, giving your customers an easy, secure
 login with their mobile device. With a simple, quick scan of a WaveCode, they can achieve 
@@ -52,7 +52,7 @@ instantaneous creation of an anonymous account, simply by the scanning of a Wave
 
   * [Enrolling a user to a service](#EnrolService)
   * [Revoking users from a service](#RevokeUser)
-   
+     
 ### Authentication
 
 Once a user is enrolled to a Service Provider, they can authenticate themselves.
@@ -69,7 +69,7 @@ username.
 
   * [WaveAuth](#WaveAuth)
   * [PushAuth](#PushAuth)
-   
+     
 ### Advanced Features  
 
 Serialization enables sharing of sessions between separate environments; they can be 
@@ -88,7 +88,7 @@ the service's storage where the consequences of a hack are far further reaching.
 Examples of where payload could be used include credit card payment details for a regularly used
 service, address details or other personally identifying details.
 
-  * [Payload](#Payload)
+  * [Payload](#Payload) 
 
 ---
 ## Cipherise Functionality
@@ -111,6 +111,7 @@ This is demonstrated below:
 package com.forticode.example;
 
 import com.forticode.cipherise.*;
+import java.io.IOException;
 
 public class Main {
 public static void main(String[] args) throws CipheriseException, IOException {
@@ -118,10 +119,10 @@ public static void main(String[] args) throws CipheriseException, IOException {
   Client client = new Client(cipheriseServer);
   // Retrieve information from the server and print it out.
   ServerInformation info = client.serverInformation();
-  System.out.println("Server version: ", info.serverVersion);
-  System.out.println("Build version: ", info.buildVersion);
-  System.out.println("Minimum app version: ", info.appMinVersion);
-  System.out.println("Maximum supported payload size: ", info.maxPayloadSize);
+  System.out.println("Server version: " + info.serverVersion);
+  System.out.println("Build version: " + info.buildVersion);
+  System.out.println("Minimum app version: " + info.appMinVersion);
+  System.out.println("Maximum supported payload size: " + info.maxPayloadSize);
 }}
 ```
 ### <a name="NewService"></a>Creating new services
@@ -160,27 +161,30 @@ A complete example using the filesystem follows.
 package com.forticode.example;
 
 import com.forticode.cipherise.*;
+import java.io.IOException;
 import java.io.File;
 import java.nio.file.Files;
 
 public class Main {
 public static void main(String[] args) throws CipheriseException, IOException {
-  final String filename = serviceName + ".service";
   final String cipheriseServer = "https://your.cipherise.server.here";
   final String serviceName = "Example Service";
+  final String filename = serviceName + ".service";
 
-  Client client = new cipherise.Client(cipheriseServer);
+  Client client = new Client(cipheriseServer);
 
   Service service = null;
   File file = new File(filename);
-  if (file.exist()) {
+  if (file.exists()) {
     // If the service has been saved to disk, load it.
+    System.out.println("Loading service from: " + file.toPath());
     byte[] serializedService = Files.readAllBytes(file.toPath());
     service = client.deserializeService(serializedService);
   } else {
     // Otherwise, create the service and store it.
     service = client.createService(serviceName);
     Files.write(file.toPath(), service.serialize());
+    System.out.println("New service written to: " + file.toPath());    
   }
 }}
 ```
@@ -193,6 +197,7 @@ A complete example of service revocation follows:
 package com.forticode.example;
 
 import com.forticode.cipherise.*;
+import java.io.IOException;
 
 public class Main {
 public static void main(String[] args) throws CipheriseException, IOException {
@@ -227,6 +232,7 @@ A complete example of the long-polling workflow follows:
 ```java
 package com.forticode.example;
 
+import java.io.*;
 import com.forticode.cipherise.*;
 import java.util.Scanner;
 
@@ -241,12 +247,13 @@ public static void main(String[] args) throws CipheriseException, IOException {
 
   // (1) Start an enrolment and present the QR code to the user.
   Enrolment enrolment = service.enrolUser(userName);
-  System.out.println("QR code URL:", enrolment.qrCodeUrl);
+  System.out.println("WaveCode URL:" + enrolment.getWaveCodeUrl());
   // (2) Wait for the user to scan and retrieve the identicon.
   String identiconUrl = enrolment.validate();
   // (3) Display the identicon.
-  System.out.println("Identicon URL:", identiconUrl); // (3)
+  System.out.println("Identicon URL:" + identiconUrl); // (3)
 
+  System.out.println("Does the Identicon match the image displayed on your device? (Press 'y' if yes) ");
   Scanner scan = new Scanner(System.in);
   String answer = scan.next();
 
@@ -254,7 +261,6 @@ public static void main(String[] args) throws CipheriseException, IOException {
   boolean confirm = answer.toLowerCase().startsWith("y");
   // (4) Confirm the enrolment as appropriate.
   enrolment.confirm(confirm);
-  rl.close();
 }}
 ```
 ### <a name="RevokeUser"></a>Revoking users from a service
@@ -269,6 +275,7 @@ A complete example of user revocation follows:
 package com.forticode.example;
 
 import com.forticode.cipherise.*;
+import java.io.IOException;
 
 public class Main {
 public static void main(String[] args) throws CipheriseException, IOException {
@@ -281,7 +288,7 @@ public static void main(String[] args) throws CipheriseException, IOException {
 
   // Automatically enrol the user.
   Enrolment enrolment = service.enrolUser(userName);
-  System.out.println("Enrolment QR code URL:", enrolment.qrCodeUrl);
+  System.out.println("Enrolment WaveCode URL: " + enrolment.getWaveCodeUrl());
   enrolment.validate();
   enrolment.confirm(true);
 
@@ -317,6 +324,7 @@ A complete example of the WaveAuth flow is shown (with a preliminary enrolment):
 package com.forticode.example;
 
 import com.forticode.cipherise.*;
+import java.io.IOException;
 
 public class Main {
 public static void main(String[] args) throws CipheriseException, IOException {
@@ -329,24 +337,25 @@ public static void main(String[] args) throws CipheriseException, IOException {
 
   // Automatically enrol the user.
   Enrolment enrolment = service.enrolUser(userName);
-  System.out.println("Enrolment QR code URL:", enrolment.qrCodeUrl);
+  System.out.println("Enrolment WaveCode URL: " + enrolment.getWaveCodeUrl());
   enrolment.validate();
   enrolment.confirm(true);
 
   // (1) Start and present wave authentication.
-  Authentication auth = service.waveAuthenticate(
+  Authentication authentication = service.waveAuthenticate(
     "Description of the authentication, appears in the app",
     "Secondary information, appears in the app",
+    null,
     AuthenticationLevel.OneTiCK
   );
-  System.out.println("Authentication QR code URL:", authentication.qrCodeUrl);
+  System.out.println("Authentication WaveCode URL: " + authentication.getWaveCodeUrl());
 
   // (2) Retrieve authentication result.
-  AuthenticationResult result = auth.authenticate();
-  System.out.println("Authenticating username:", result.username);
+  AuthenticationResult result = authentication.authenticate();
+  System.out.println("Authenticating username: " + result.username);
   System.out.println(
-    "Did the authentication succeed?",
-    result.authenticated == Authenticated.Success
+    "Did the authentication succeed? " + 
+    result.authenticated.equals(Authenticated.Success)
   );
 }}
 ```
@@ -387,6 +396,8 @@ enrolment):
 package com.forticode.example;
 
 import com.forticode.cipherise.*;
+import java.io.IOException;
+import java.util.List;
 
 public class Main {
 public static void main(String[] args) throws CipheriseException, IOException {
@@ -399,16 +410,18 @@ public static void main(String[] args) throws CipheriseException, IOException {
 
   // Automatically enrol the user.
   Enrolment enrolment = service.enrolUser(userName);
-  System.out.println("Enrolment QR code URL:", enrolment.qrCodeUrl);
+  System.out.println("Enrolment WaveCode URL:" + enrolment.getWaveCodeUrl());
   enrolment.validate();
   enrolment.confirm(true);
 
   // (1) Retrieve a device.
   List<Device> devices = service.getUserDevices(userName);
   // Take the last device returned (the most recent device).
-  Device device = devices[devices.length - 1];
+  Device device = devices.get(devices.size() - 1);
 
   // (2) Send a push authentication to the device.
+  System.out.println("Sending authentication to: " + userName);
+  System.out.println("Please check your device for an authentication.");
   Authentication auth = service.pushAuthenticate(
     userName,
     device,
@@ -420,10 +433,10 @@ public static void main(String[] args) throws CipheriseException, IOException {
 
   // (3) Retrieve the result of the authentication.
   AuthenticationResult result = auth.authenticate();
-  System.out.println("Authenticating username:", result.username);
+  System.out.println("Authenticating username: " + result.username);
   System.out.println(
-    "Did the authentication succeed?",
-    result.authenticated == Authenticated.Success
+    "Did the authentication succeed? " + 
+    result.authenticated.equals(Authenticated.Success)
   );
 }}
 ```
@@ -463,6 +476,11 @@ A complete example for enrolment follows:
 package com.forticode.example;
 
 import com.forticode.cipherise.*;
+import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Main {
 public static void main(String[] args) throws CipheriseException, IOException {
@@ -477,7 +495,7 @@ public static void main(String[] args) throws CipheriseException, IOException {
   Enrolment enrolment = service.enrolUser(userName);
   final Map<String, String> payload1 = new HashMap<>();
   payload1.put("hello", "world");
-  System.out.println("Enrolment QR code URL:", enrolment.qrCodeUrl);
+  System.out.println("Enrolment WaveCode URL:" + enrolment.getWaveCodeUrl());
   enrolment.validate();
   enrolment.confirm(true,
     new PayloadRequestBuilder().withSet(payload1).build()
@@ -486,7 +504,7 @@ public static void main(String[] args) throws CipheriseException, IOException {
   // Retrieve a device.
   List<Device> devices = service.getUserDevices(userName);
   // Take the last device returned (the most recent device).
-  Device device = devices[devices.length - 1];
+  Device device = devices.get(devices.size() - 1);
 
   // Send a push authentication to the device.
   Authentication auth = service.pushAuthenticate(
@@ -503,16 +521,16 @@ public static void main(String[] args) throws CipheriseException, IOException {
   payload2.put("testing", "this payload");
   AuthenticationResult result = auth.authenticate(true,
     new PayloadRequestBuilder()
-      .withGet(new ArrayList<string>(payload1.keySet()))
+      .withGet(new ArrayList<String>(payload1.keySet()))
       .withSet(payload2)
       .build()
   );
-  System.out.println("Authenticating username:", result.username);
+  System.out.println("Authenticating username:" + result.username);
   System.out.println(
-    "Did the authentication succeed?",
-    result.authenticated == Authenticated.Success
+    "Did the authentication succeed? " + 
+    result.authenticated.equals(Authenticated.Success)
   );
-  System.out.println("Payload stored?", result.payload.set);
-  System.out.println("Payload retrieved", result.payload.get);
+  System.out.println("Payload stored? " + result.payload.set);
+  System.out.println("Payload retrieved " + result.payload.get);
 }}
 ```
